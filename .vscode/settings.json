@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Equipo-alfa-buena-maravilla-onda-dinamita-escuadr-n-lobo.slnx"
+    "dotnet.defaultSolution": "Equipo alfa buena maravilla onda dinamita escuadrón lobo.slnx"
 }
