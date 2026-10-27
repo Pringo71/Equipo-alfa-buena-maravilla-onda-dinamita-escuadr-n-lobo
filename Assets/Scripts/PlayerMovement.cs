@@ -28,38 +28,54 @@ public class GridMovement : MonoBehaviour
 
     private void MovePlayer(Vector2 direction)
     {
-        Vector2 targetPos = (Vector2)transform.position + (direction * cellSize);
+        // Alineación precisa a la cuadrícula
+        Vector2 currentPos = new Vector2(
+            Mathf.Round(transform.position.x / cellSize) * cellSize,
+            Mathf.Round(transform.position.y / cellSize) * cellSize
+        );
 
-        // Apagamos el collider del jugador un instante
+        Vector2 targetPos = currentPos + (direction * cellSize);
+
+        // Desactivamos temporalmente el collider del jugador para que no bloquee el OverlapPoint
         Collider2D myCollider = GetComponent<Collider2D>();
-        myCollider.enabled = false;
+        if (myCollider != null) myCollider.enabled = false;
 
-        // Revisamos EXACTAMENTE el centro de la siguiente casilla
+        // Revisamos qué hay en la casilla a la que nos queremos mover
         Collider2D hit = Physics2D.OverlapPoint(targetPos);
-        myCollider.enabled = true;
+        
+        if (myCollider != null) myCollider.enabled = true;
 
-        // Si no hay nada o es un portal/estrella
+        // CASO 1: Si no hay nada, o es un Trigger (como metas o portales) -> Nos movemos libremente
         if (hit == null || hit.isTrigger)
         {
             transform.position = targetPos;
         }
-        // Si chocamos con una caja
+        // CASO 2: Si chocamos con una PARED (puedes identificarla por Tag o Layer, ej. tag "Wall")
+        else if (hit.CompareTag("Wall"))
+        {
+            // No hacemos nada, la pared bloquea el paso
+            return;
+        }
+        // CASO 3: Si chocamos con una CAJA
         else if (hit.GetComponent<BoxPushable>() != null)
         {
             Vector2 boxTargetPos = targetPos + (direction * cellSize);
 
-            // Apagamos la caja para ver que hay detras de ella
-            hit.enabled = false;
-            Collider2D hitBehind = Physics2D.OverlapPoint(boxTargetPos);
-            hit.enabled = true;
+            // Desactivamos el collider de la caja para revisar qué hay detrás de ella
+            Collider2D boxCollider = hit.GetComponent<Collider2D>();
+            if (boxCollider != null) boxCollider.enabled = false;
 
-            // Si detras de la caja esta libre o hay un portal
+            Collider2D hitBehind = Physics2D.OverlapPoint(boxTargetPos);
+
+            if (boxCollider != null) boxCollider.enabled = true;
+
+            // Si detrás de la caja está libre, es un trigger o una meta, empujamos
             if (hitBehind == null || hitBehind.isTrigger)
             {
-                // Movemos la caja y al jugador
                 hit.transform.position = boxTargetPos;
                 transform.position = targetPos;
             }
+            // Si detrás de la caja hay una pared u otra caja, no se mueve nada (bloqueado)
         }
     }
 }

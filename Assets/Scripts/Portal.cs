@@ -12,7 +12,7 @@ public class Portal : MonoBehaviour
             return;
         }
 
-        // Si el jugador usa Rigidbody2D, movemos el cuerpo fisico y frenamos su velocidad
+        // Si el jugador usa Rigidbody2D, movemos el cuerpo fÃsico y frenamos su velocidad
         if (collision.TryGetComponent(out Rigidbody2D rb))
         {
             rb.position = destination.position;
