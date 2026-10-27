@@ -1086,6 +1086,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Background
       objectReference: {fileID: 0}
+    - target: {fileID: 8478473898745097302, guid: 10de4905f19d60b4d9c4ac8ca3698e55, type: 3}
+      propertyPath: m_SortingOrder
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9081710266874153741, guid: 10de4905f19d60b4d9c4ac8ca3698e55, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.43
