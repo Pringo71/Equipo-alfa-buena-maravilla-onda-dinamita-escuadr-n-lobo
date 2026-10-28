@@ -7,9 +7,9 @@ public class BoxPushable : MonoBehaviour
     void Start()
     {
         Vector2 p = transform.position;
-        transform.position = new Vector2(
-            Mathf.Round(p.x / cellSize) * cellSize,
-            Mathf.Round(p.y / cellSize) * cellSize);
+       // transform.position = new Vector2(
+           // Mathf.Round(p.x / cellSize) * cellSize,
+           // Mathf.Round(p.y / cellSize) * cellSize);
     }
 
     // Devuelve true si la caja se movió

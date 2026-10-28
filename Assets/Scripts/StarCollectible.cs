@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class StarCollectible : MonoBehaviour
 {
+    public AudioClip sonidoEstrella;
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Verificamos si el personaje principal entra en la estrella
         if (collision.CompareTag("Player"))
         {
             if (GameManager.instance != null)
@@ -12,7 +13,15 @@ public class StarCollectible : MonoBehaviour
                 GameManager.instance.AddStar();
             }
 
-            // Destruimos la estrella del escenario
+            // Reproducir sonido al recolectar
+            if (sonidoEstrella != null)
+            {
+                AudioSource.PlayClipAtPoint(
+                    sonidoEstrella,
+                    Camera.main.transform.position
+                );
+            }
+
             Destroy(gameObject);
         }
     }
