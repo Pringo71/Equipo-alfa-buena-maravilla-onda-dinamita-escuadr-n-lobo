@@ -1,81 +1,68 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class GridMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
-    public float cellSize = 1f;
+    public float cellSize = 0.5f;
+    Vector2 posicionInicial;
+
+    void Start()
+    {
+        // Ajusta al jugador a la cuadrícula
+        Vector2 p = transform.position;
+        transform.position = new Vector2(
+            Mathf.Round(p.x / cellSize) * cellSize,
+            Mathf.Round(p.y / cellSize) * cellSize);
+
+        posicionInicial = transform.position;
+    }
 
     void Update()
     {
-        if (Keyboard.current == null) return;
+        Keyboard k = Keyboard.current;
+        if (k == null) return;
 
-        Vector2 direction = Vector2.zero;
+        Vector2 dir = Vector2.zero;
 
-        if (Keyboard.current.upArrowKey.wasPressedThisFrame || Keyboard.current.wKey.wasPressedThisFrame)
-            direction = Vector2.up;
-        else if (Keyboard.current.downArrowKey.wasPressedThisFrame || Keyboard.current.sKey.wasPressedThisFrame)
-            direction = Vector2.down;
-        else if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
-            direction = Vector2.left;
-        else if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
-            direction = Vector2.right;
+        if (k.wKey.wasPressedThisFrame || k.upArrowKey.wasPressedThisFrame) dir = Vector2.up;
+        else if (k.sKey.wasPressedThisFrame || k.downArrowKey.wasPressedThisFrame) dir = Vector2.down;
+        else if (k.aKey.wasPressedThisFrame || k.leftArrowKey.wasPressedThisFrame) dir = Vector2.left;
+        else if (k.dKey.wasPressedThisFrame || k.rightArrowKey.wasPressedThisFrame) dir = Vector2.right;
 
-        if (direction != Vector2.zero)
-        {
-            MovePlayer(direction);
-        }
+        if (dir != Vector2.zero) Mover(dir);
     }
 
-    private void MovePlayer(Vector2 direction)
+    void Mover(Vector2 dir)
     {
-        // Alineación precisa a la cuadrícula
-        Vector2 currentPos = new Vector2(
-            Mathf.Round(transform.position.x / cellSize) * cellSize,
-            Mathf.Round(transform.position.y / cellSize) * cellSize
-        );
+        Vector2 destino = (Vector2)transform.position + dir * cellSize;
+        Collider2D hit = ObtenerSolido(destino);
 
-        Vector2 targetPos = currentPos + (direction * cellSize);
-
-        // Desactivamos temporalmente el collider del jugador para que no bloquee el OverlapPoint
-        Collider2D myCollider = GetComponent<Collider2D>();
-        if (myCollider != null) myCollider.enabled = false;
-
-        // Revisamos qué hay en la casilla a la que nos queremos mover
-        Collider2D hit = Physics2D.OverlapPoint(targetPos);
-        
-        if (myCollider != null) myCollider.enabled = true;
-
-        // CASO 1: Si no hay nada, o es un Trigger (como metas o portales) -> Nos movemos libremente
-        if (hit == null || hit.isTrigger)
+        if (hit != null)
         {
-            transform.position = targetPos;
+            BoxPushable caja = hit.GetComponent<BoxPushable>();
+
+            // Pared, u otra cosa sólida, o caja que no se puede empujar: no avanzamos
+            if (caja == null || !caja.Empujar(dir)) return;
         }
-        // CASO 2: Si chocamos con una PARED (puedes identificarla por Tag o Layer, ej. tag "Wall")
-        else if (hit.CompareTag("Wall"))
+
+        transform.position = destino;
+    }
+
+    // Busca algo sólido en la casilla, ignorando al jugador y a los triggers
+    Collider2D ObtenerSolido(Vector2 centro)
+    {
+        Collider2D[] hits = Physics2D.OverlapBoxAll(centro, Vector2.one * cellSize * 0.8f, 0f);
+        foreach (Collider2D h in hits)
         {
-            // No hacemos nada, la pared bloquea el paso
-            return;
+            if (h.gameObject == gameObject || h.isTrigger) continue;
+            return h;
         }
-        // CASO 3: Si chocamos con una CAJA
-        else if (hit.GetComponent<BoxPushable>() != null)
-        {
-            Vector2 boxTargetPos = targetPos + (direction * cellSize);
+        return null;
+    }
 
-            // Desactivamos el collider de la caja para revisar qué hay detrás de ella
-            Collider2D boxCollider = hit.GetComponent<Collider2D>();
-            if (boxCollider != null) boxCollider.enabled = false;
-
-            Collider2D hitBehind = Physics2D.OverlapPoint(boxTargetPos);
-
-            if (boxCollider != null) boxCollider.enabled = true;
-
-            // Si detrás de la caja está libre, es un trigger o una meta, empujamos
-            if (hitBehind == null || hitBehind.isTrigger)
-            {
-                hit.transform.position = boxTargetPos;
-                transform.position = targetPos;
-            }
-            // Si detrás de la caja hay una pared u otra caja, no se mueve nada (bloqueado)
-        }
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.name.Contains("Portal"))
+            transform.position = posicionInicial;
     }
 }
