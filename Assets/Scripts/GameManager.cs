@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviour
     {
         if (starText != null)
         {
-            starText.text = currentStars + "/" + totalStars;
+            starText.text = "Score: " + currentStars + "/" + totalStars;
         }
     }
 }

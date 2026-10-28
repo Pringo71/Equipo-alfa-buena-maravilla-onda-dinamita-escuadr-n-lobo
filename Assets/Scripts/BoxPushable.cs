@@ -16,7 +16,7 @@ public class BoxPushable : MonoBehaviour
     public bool Empujar(Vector2 dir)
     {
         Vector2 destino = (Vector2)transform.position + dir * cellSize;
-
+        if (!LimitesJuego.Dentro(destino, cellSize)) return false;
         Collider2D[] hits = Physics2D.OverlapBoxAll(destino, Vector2.one * cellSize * 0.8f, 0f);
         foreach (Collider2D h in hits)
         {

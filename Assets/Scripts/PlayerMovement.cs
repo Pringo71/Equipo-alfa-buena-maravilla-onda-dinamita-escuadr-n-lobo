@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     public float cellSize = 0.5f;
+    public bool juegoIniciado = false;
+    
     Vector2 posicionInicial;
 
     void Start()
@@ -19,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+         if (!juegoIniciado) return;
         Keyboard k = Keyboard.current;
         if (k == null) return;
 
@@ -35,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     void Mover(Vector2 dir)
     {
         Vector2 destino = (Vector2)transform.position + dir * cellSize;
+        if (!LimitesJuego.Dentro(destino, cellSize)) return;
         Collider2D hit = ObtenerSolido(destino);
 
         if (hit != null)
